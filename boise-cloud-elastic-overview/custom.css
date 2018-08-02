@@ -1,0 +1,16 @@
+section#sec-title-slide *:not(h1) {
+    opacity: 0.5;
+}
+
+.reveal section img {
+    background: 0;
+    border: 0;
+    box-shadow: 0;
+}
+
+.reveal section li img {
+    height: 1em;
+    margin: 0;
+    padding-left: 0.5em;
+    vertical-align: sub;
+}

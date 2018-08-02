@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>A Short Tour of the Elastic Stack</title>
+<meta name="author" content="(Tyler Langlois)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="reveal.js-3.6.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="reveal.js-3.6.0/css/theme/black.css" id="theme"/>
+
+<link rel="stylesheet" href="custom.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'reveal.js-3.6.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>A Short Tour of the Elastic Stack</h1><h4>Tyler Langlois</h4><h4>Software&nbsp;Engineer@Elastic</h4><h6>2 August, 2018</h6>
+</section>
+
+<section>
+<section id="slide-org2897609">
+<h2 id="org2897609"><code>whoami</code></h2>
+<ul>
+<li>Devops/software engineering at Elastic</li>
+<li>Been tinkering on Elasticsearch since 0.19</li>
+<li><p>
+Would love to talk to you about ARM, birdwatching, tech in Boise, and my dog Morty
+</p>
+<aside class="notes">
+<ul>
+<li>Ask about people's familiarity?</li>
+
+</ul>
+
+</aside></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orga412a9c">
+<h2 id="orga412a9c">Overview</h2>
+<ul>
+<li><a href="#/slide-org36832d2">5,000-foot view</a></li>
+<li><a href="#/slide-orgccdde4d">Elasticsearch</a></li>
+<li><a href="#/slide-org57cd888">Logstash</a></li>
+<li><a href="#/slide-orgfdf77df">Kibana</a></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org36832d2">
+<h2 id="org36832d2">The Elastic Stack</h2>
+<p>
+What is it?
+</p>
+<p class="fragment (appear)">
+The open source software stack that brings data into Elasticsearch and turns that data into useful information (open core, some features behind paid licensing)
+</p>
+</section>
+<section >
+<p>
+Components:
+</p>
+<ul>
+<li class="fragment appear">Elasticsearch <img src="images/es.png" alt="es.png" /> 
+<ul>
+<li>Data store, distributed, REST API</li>
+
+</ul></li>
+<li class="fragment appear">Logstash <img src="images/ls.png" alt="ls.png" /> 
+<ul>
+<li>Swiss-army-knife with plugins for all types of data munging</li>
+
+</ul></li>
+<li class="fragment appear">Kibana <img src="images/kb.png" alt="kb.png" /> 
+<ul>
+<li>Browser-based frontend to make data in Elasticsearch into useful visualizations</li>
+
+</ul></li>
+<li class="fragment appear">Beats <img src="images/beats.png" alt="beats.png" /> 
+<ul>
+<li>Specialized agents that serve a single purpose</li>
+<li>Webserver logs, machine metrics, container logs, etc.</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgccdde4d">
+<h2 id="orgccdde4d">Elasticsearch</h2>
+<ul>
+<li>RESTful API</li>
+<li>Distributed nature, both for high availability and performance</li>
+
+</ul>
+
+</section>
+<section id="slide-orga7e1e7f">
+<h3 id="orga7e1e7f">What does it look like?</h3>
+<div class="org-src-container">
+
+<pre  class="src src-es"><span style="color: #4f97d7;">GET</span> <span style="color: #7590db;">/</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="src src-es"><span style="color: #4f97d7;">{</span>
+  <span style="color: #2d9574;">"name"</span> : <span style="color: #2d9574;">"master-0"</span>,
+  <span style="color: #2d9574;">"cluster_name"</span> : <span style="color: #2d9574;">"global-elasticsearch"</span>,
+  <span style="color: #2d9574;">"cluster_uuid"</span> : <span style="color: #2d9574;">"L8UMCuJrSsCBjz1tc_38vw"</span>,
+  <span style="color: #2d9574;">"</span><span style="color: #4f97d7; font-weight: bold;">version</span><span style="color: #2d9574;">"</span> : <span style="color: #bc6ec5;">{</span>
+    <span style="color: #2d9574;">"number"</span> : <span style="color: #2d9574;">"6.2.3"</span>,
+    <span style="color: #2d9574;">"build_hash"</span> : <span style="color: #2d9574;">"c59ff00"</span>,
+    <span style="color: #2d9574;">"build_date"</span> : <span style="color: #2d9574;">"2018-03-13T10:06:29.741383Z"</span>,
+    <span style="color: #2d9574;">"build_snapshot"</span> : <span style="color: #a45bad;">false</span>,
+    <span style="color: #2d9574;">"lucene_version"</span> : <span style="color: #2d9574;">"7.2.1"</span>,
+    <span style="color: #2d9574;">"minimum_wire_compatibility_version"</span> : <span style="color: #2d9574;">"5.6.0"</span>,
+    <span style="color: #2d9574;">"minimum_index_compatibility_version"</span> : <span style="color: #2d9574;">"5.0.0"</span>
+  <span style="color: #bc6ec5;">}</span>,
+  <span style="color: #2d9574;">"tagline"</span> : <span style="color: #2d9574;">"You Know, for Search"</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+</section>
+<section id="slide-orgdd0a345">
+<h3 id="orgdd0a345">Query Example</h3>
+<p>
+Q: "How many DNS requests have I sent in the last 10 minutes?"
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-es"><span style="color: #4f97d7;">GET</span> <span style="color: #7590db;">_search</span>
+<span style="color: #4f97d7;">{</span>
+  <span style="color: #2d9574;">"</span><span style="color: #4f97d7; font-weight: bold;">size</span><span style="color: #2d9574;">"</span>: <span style="color: #a45bad;">0</span>,
+  <span style="color: #2d9574;">"</span><span style="color: #a45bad;">query</span><span style="color: #2d9574;">"</span>: <span style="color: #bc6ec5;">{</span>
+    <span style="color: #2d9574;">"</span><span style="color: #ce537a; font-weight: bold;">bool</span><span style="color: #2d9574;">"</span>: <span style="color: #2d9574;">{</span>
+      <span style="color: #2d9574;">"must"</span>: <span style="color: #67b11d;">[</span>
+        <span style="color: #b1951d;">{</span><span style="color: #2d9574;">"</span><span style="color: #bc6ec5; font-weight: bold;">range</span><span style="color: #2d9574;">"</span>: <span style="color: #4f97d7;">{</span><span style="color: #2d9574;">"@timestamp"</span>: <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"gte"</span>: <span style="color: #2d9574;">"now-10m"</span><span style="color: #bc6ec5;">}</span><span style="color: #4f97d7;">}</span><span style="color: #b1951d;">}</span>,
+        <span style="color: #b1951d;">{</span><span style="color: #2d9574;">"</span><span style="color: #bc6ec5; font-weight: bold;">term</span><span style="color: #2d9574;">"</span>:  <span style="color: #4f97d7;">{</span><span style="color: #2d9574;">"netflow.dst_port"</span>: <span style="color: #a45bad;">53</span><span style="color: #4f97d7;">}</span><span style="color: #b1951d;">}</span>,
+        <span style="color: #b1951d;">{</span><span style="color: #2d9574;">"</span><span style="color: #bc6ec5; font-weight: bold;">term</span><span style="color: #2d9574;">"</span>:  <span style="color: #4f97d7;">{</span><span style="color: #2d9574;">"netflow.src_addr"</span>: <span style="color: #2d9574;">"192.168.1.183"</span><span style="color: #4f97d7;">}</span><span style="color: #b1951d;">}</span>
+      <span style="color: #67b11d;">]</span>
+    <span style="color: #2d9574;">}</span>
+  <span style="color: #bc6ec5;">}</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+
+</section>
+<section >
+
+<div class="org-src-container">
+
+<pre  class="src src-es"><span style="color: #4f97d7;">{</span>
+  <span style="color: #2d9574;">"took"</span> : <span style="color: #a45bad;">80</span>,
+  <span style="color: #2d9574;">"timed_out"</span> : <span style="color: #a45bad;">false</span>,
+  <span style="color: #2d9574;">"_shards"</span> : <span style="color: #bc6ec5;">{</span>
+    <span style="color: #2d9574;">"total"</span> : <span style="color: #a45bad;">20</span>,
+    <span style="color: #2d9574;">"successful"</span> : <span style="color: #a45bad;">20</span>,
+    <span style="color: #2d9574;">"skipped"</span> : <span style="color: #a45bad;">0</span>,
+    <span style="color: #2d9574;">"failed"</span> : <span style="color: #a45bad;">0</span>
+  <span style="color: #bc6ec5;">}</span>,
+  <span style="color: #2d9574;">"hits"</span> : <span style="color: #bc6ec5;">{</span>
+    <span style="color: #2d9574;">"total"</span> : <span style="color: #a45bad;">123</span>,
+    <span style="color: #2d9574;">"max_score"</span> : <span style="color: #a45bad;">0</span>.<span style="color: #a45bad;">0</span>,
+    <span style="color: #2d9574;">"hits"</span> : <span style="color: #2d9574;">[</span> <span style="color: #2d9574;">]</span>
+  <span style="color: #bc6ec5;">}</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+
+<p>
+A: 123
+</p>
+
+<p>
+(These examples are taken from the <a href="https://www.elastic.co/guide/en/logstash/current/netflow-module.html">logstash netflow module</a>)
+</p>
+
+</section>
+<section id="slide-orga2b25ca">
+<h3 id="orga2b25ca">Architecture</h3>
+<p>
+Simple node architecture (what I run at home)
+</p>
+
+
+<div class="figure">
+<p><img src="node-diagram.png" alt="node-diagram.png" /> 
+</p>
+</div>
+</section>
+<section id="slide-org1a2b670">
+<h3 id="org1a2b670">Use Cases</h3>
+<ul>
+<li class="fragment appear">Search
+<ul>
+<li>Freetext, suggestions, synonyms, languages, etc.</li>
+
+</ul></li>
+<li class="fragment appear">Logging
+<ul>
+<li>Modern Elasticsearch can accept your logs in any form and parse in-cluster</li>
+<li>Field data types make for powerful searching (CIDR notation for IPs, average/percentile for duration/latencies)</li>
+
+</ul></li>
+<li class="fragment appear">Metrics
+<ul>
+<li>Metricbeat + Elasticsearch for host-level monitoring</li>
+<li>We use this internally to monitor latency and performance for public-facing services</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org30aab31">
+<h3 id="org30aab31"><a href="https://www.elastic.co/products/beats/heartbeat">Heartbeat</a> Monitoring</h3>
+
+<div class="figure">
+<p><img src="images/heartbeat.png" alt="heartbeat.png" /> 
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org57cd888">
+<h2 id="org57cd888">Logstash</h2>
+<ul>
+<li>Generic tool for collecting, transforming, and loading data</li>
+<li>Strength lies in its flexibility and suite of plugins and modules</li>
+<li><i>Not</i> Elasticsearch-specific, can load data into a variety of sinks</li>
+
+</ul>
+
+</section>
+<section id="slide-orga62abc2">
+<h3 id="orga62abc2">Example Configuration File</h3>
+<div class="org-src-container">
+
+<pre  class="src src-conf"><span style="color: #ce537a; font-weight: bold;">input</span> {
+  <span style="color: #ce537a; font-weight: bold;">stdin</span> {
+  }
+}
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">Your plugins go here</span>
+<span style="color: #ce537a; font-weight: bold;">output</span> {
+  <span style="color: #ce537a; font-weight: bold;">stdout</span> {
+    <span style="color: #7590db;">codec</span> =&gt; rubydebug
+  }
+}
+</pre>
+</div>
+
+</section>
+<section id="slide-orgf421861">
+<h3 id="orgf421861">Output</h3>
+<div class="org-src-container">
+
+<pre  class="src src-json">Hello, world!
+<span style="color: #4f97d7;">{</span>
+      <span style="color: #2d9574;">"@version"</span> =&gt; "<span style="color: #a45bad;">1</span>",
+      <span style="color: #2d9574;">"message"</span> =&gt; <span style="color: #2d9574;">"Hello, world!"</span>,
+    <span style="color: #2d9574;">"@timestamp"</span> =&gt; <span style="color: #a45bad;">2018</span>-<span style="color: #a45bad;">07</span>-<span style="color: #a45bad;">13T21</span>:<span style="color: #a45bad;">20</span>:<span style="color: #a45bad;">15</span>.<span style="color: #a45bad;">206Z</span>,
+          <span style="color: #2d9574;">"host"</span> =&gt; <span style="color: #2d9574;">"tylasticsearch.lan.tyjl.org"</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-orgcb28423">
+<h3 id="orgcb28423">It's about the plugins</h3>
+<p>
+Designed to be easily extensible and flexible
+</p>
+
+<p>
+Plugins exist for:
+</p>
+<ul>
+<li class="fragment appear">Typical machine data (logs, metrics, commands, etc)</li>
+<li class="fragment appear">Data transformation (GeoIP lookups, sentiment analysis, parsing, etc.)</li>
+<li class="fragment appear">Ingestion of all kinds:
+<ul>
+<li>Social media (twitter, reddit, rss, &#x2026;)</li>
+<li>Other systems (beats, kafka, JDBC, etc.)</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgfdf77df">
+<h2 id="orgfdf77df">Kibana</h2>
+<p class="fragment (appear)">
+Turns the data inside Elasticsearch into an easily used form.
+</p>
+<p class="fragment (appear)">
+Dashboards and visualizations - tables, line charts, heat maps, geographical maps, histograms, and more.
+</p>
+
+</section>
+<section id="slide-org9866bc0">
+<h3 id="org9866bc0">Operational Details</h3>
+<ul>
+<li>Stateless - dashboards are stored with Elasticsearch itself.</li>
+<li>Node project, plugins and extra visualization types are built as components</li>
+
+</ul>
+
+</section>
+<section id="slide-org5258a82">
+<h3 id="org5258a82">What does it look like?</h3>
+<div class="outline-text-3" id="text-org5258a82">
+</div>
+</section>
+<section id="slide-orge6ab77a">
+<h4 id="orge6ab77a"><a href="https://www.elastic.co/products/beats/metricbeat">Metricbeat</a></h4>
+
+<div class="figure">
+<p><img src="images/metricbeat.png" alt="metricbeat.png" /> 
+</p>
+</div>
+
+</section>
+<section id="slide-org2a3bc6a">
+<h4 id="org2a3bc6a">Web logs</h4>
+
+<div class="figure">
+<p><img src="images/weblogs.png" alt="weblogs.png" /> 
+</p>
+</div>
+
+</section>
+<section id="slide-orgcb6df79">
+<h4 id="orgcb6df79"><a href="https://www.elastic.co/guide/en/beats/metricbeat/master/metricbeat-module-kubernetes.html">Kubernetes</a> statistics</h4>
+
+<div class="figure">
+<p><img src="images/kubernetes.png" alt="kubernetes.png" />
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgf29360f">
+<h2 id="orgf29360f">Beats</h2>
+<ul>
+<li class="fragment appear">Single-purpose-built, highly focused tools designed for ease and speed</li>
+
+</ul>
+<ul>
+<li class="fragment appear">Most tools take one form of input (file, metrics, API, etc.) and ship to Elasticsearch</li>
+
+</ul>
+
+</section>
+<section >
+<p>
+There are <i>many</i> different types of Beats, here are a few:
+</p>
+
+</section>
+<section id="slide-org3501731">
+<h3 id="org3501731">Filebeat</h3>
+<ul>
+<li>Tail any sort of file, minor parsing/processing, and ship to Elasticsearch/Logstash/Kafka/Redis/etc.</li>
+<li>Common use case is collecting webserver logs for later analysis in Kibana</li>
+<li>Handles file position, backpressure, etc.</li>
+
+</ul>
+
+</section>
+<section id="slide-org1d571c8">
+<h3 id="org1d571c8">Metricbeat</h3>
+<ul>
+<li>Collects various types of system-level metrics</li>
+<li>CPU load, memory use, network activity, disk input/output, and so on</li>
+<li>We dogfood this heavily and use it every day (alerts for disk, etc.)</li>
+
+</ul>
+
+</section>
+<section id="slide-org401f96c">
+<h3 id="org401f96c">Aside: Metrics</h3>
+<p>
+Elasticsearch is a <i>document</i> store, but you can query metrics? (!textual data)
+</p>
+
+</section>
+<section >
+<p>
+It's true Elasticsearch excels at freetext search (wildcards, autocomplete, aggregations, etc.)
+</p>
+<p class="fragment (appear)">
+Lucene (the underlying library) <i>also</i> supports data types other than textual
+</p>
+<ul>
+<li class="fragment appear">Numeric (to perform averages, max values, sum all fields, etc.)</li>
+<li class="fragment appear">GeoIP data types (longitude/latitude) that can be easily used in Kibana to chart maps</li>
+<li class="fragment appear">Even IP ranges are native to support search for CIDR ranges (I do this at home)</li>
+
+</ul>
+
+</section>
+<section id="slide-org5cd0ec5">
+<h3 id="org5cd0ec5">Winlogbeat</h3>
+<p>
+I don't use Windows, but I hear it's good?
+</p>
+
+</section>
+<section id="slide-orgcec532b">
+<h3 id="orgcec532b">Heartbeat</h3>
+<ul>
+<li class="fragment appear">It's like a build-your-own web site monitoring system (I'm a fan)</li>
+<li class="fragment appear">Watch a site, collect response time/uptime metrics, and dashboard/alert on uptime</li>
+
+</ul>
+
+</section>
+<section id="slide-orgb368bf2">
+<h4 id="orgb368bf2">Config File</h4>
+<div class="org-src-container">
+
+<pre  class="src src-yaml"><span style="color: #7590db;">heartbeat.monitors</span>:
+- <span style="color: #7590db;">type</span>: http
+  <span style="color: #7590db;">schedule</span>: <span style="color: #2d9574;">'@every 5s'</span>
+  <span style="color: #7590db;">urls</span>: [<span style="color: #2d9574;">"https://tjll.net"</span>]
+  <span style="color: #7590db;">check.response.status</span>: 200
+</pre>
+</div>
+
+</section>
+<section id="slide-org03ed6ac">
+<h4 id="org03ed6ac">Dashboard</h4>
+
+<div class="figure">
+<p><img src="images/heartbeat-example.jpg" alt="heartbeat-example.jpg" />
+</p>
+</div>
+
+</section>
+<section id="slide-org3ca5e53">
+<h3 id="org3ca5e53">Modules</h3>
+<p>
+Take Beats one step further by pre-loading all the requisite parsing steps, file paths, and necessary configs
+</p>
+
+</section>
+<section id="slide-orgb267877">
+<h4 id="orgb267877">Filebeat: <a href="https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-apache2.html">Apache2 Module</a></h4>
+<p>
+The <code>apache2</code> Filebeat module already knows what files to watch, what regex to use, and how to enrich web logs with GeoIP data and more.
+</p>
+
+
+<div class="org-src-container">
+
+<pre  class="src src-yaml">- <span style="color: #7590db;">module</span>: apache2
+  <span style="color: #7590db;">access</span>:
+    <span style="color: #7590db;">enabled</span>: <span style="color: #a45bad;">true</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org669053c">
+<h4 id="org669053c">Metricbeat: <a href="https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-docker.html">Docker Module</a></h4>
+<p>
+Capture all sorts of metrics for all containers automatically
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-yaml"><span style="color: #7590db;">metricbeat.modules</span>:
+- <span style="color: #7590db;">module</span>: docker
+  <span style="color: #7590db;">metricsets</span>:
+    - <span style="color: #2d9574;">"container"</span>
+    - <span style="color: #2d9574;">"cpu"</span>
+    - <span style="color: #2d9574;">"memory"</span>
+  <span style="color: #7590db;">hosts</span>: [<span style="color: #2d9574;">"unix:///var/run/docker.sock"</span>]
+  <span style="color: #7590db;">period</span>: 10s
+  <span style="color: #7590db;">enabled</span>: <span style="color: #a45bad;">true</span>
+</pre>
+</div>
+</section>
+</section>
+</div>
+</div>
+<script src="reveal.js-3.6.0/lib/js/head.min.js"></script>
+<script src="reveal.js-3.6.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'slide', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: null, // null if client
+    id: '6394e479d7800af4', // id, obtained from socket.io server
+    url: 'https://reveal-js-multiplex-ccjbegmaii.now.sh:443' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+,
+ { src: 'reveal.js-3.6.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+,
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js', async: true },
+ { src: 'reveal.js-3.6.0/plugin/multiplex/client.js', async: true }]
+});
+</script>
+</body>
+</html>

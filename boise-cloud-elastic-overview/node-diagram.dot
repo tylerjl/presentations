@@ -1,0 +1,42 @@
+graph G {
+  layout = fdp;
+
+  edge [
+        color="white",
+  ]
+
+  graph [
+         bgcolor=transparent;
+         color="white",
+         compound=true,
+         fontname="Helvetica",
+         fontcolor="white",
+         label="\nElasticsearch Cluster",
+         ranksep=1.5
+  ]
+
+  node [
+        fillcolor="#2c9574",
+        fontname="Helvetica",
+        shape="cylinder",
+        style="filled"
+  ]
+
+  subgraph cluster_0 {
+    label = "Data Nodes";
+    data01;
+    data02;
+    data03;
+    data04;
+    data04;
+  }
+
+  subgraph cluster_1 {
+    label = "Master Nodes"
+    master01;
+    master02;
+    master03;
+  }
+
+  cluster_0 -- cluster_1
+}
