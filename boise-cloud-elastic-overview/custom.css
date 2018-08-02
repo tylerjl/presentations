@@ -1,3 +1,18 @@
+.reveal img {
+    box-shadow: none !important;
+}
+
+body {
+    background: #222222f0;
+    background-color: #222222f0;
+}
+
+.src {
+    background-color: #222222;
+    background: #222222;
+    padding: 1em !important;
+}
+
 section#sec-title-slide *:not(h1) {
     opacity: 0.5;
 }
@@ -5,12 +20,12 @@ section#sec-title-slide *:not(h1) {
 .reveal section img {
     background: 0;
     border: 0;
-    box-shadow: 0;
 }
 
 .reveal section li img {
     height: 1em;
     margin: 0;
     padding-left: 0.5em;
+    padding-right: 0.4em;
     vertical-align: sub;
 }
