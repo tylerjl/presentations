@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Loving DevOps by Distrusting Everything</title>
+<meta name="author" content="Tyler Langlois"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="reveal.js-3.6.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="reveal.js-3.6.0/css/theme/league.css" id="theme"/>
+
+<link rel="stylesheet" href="custom-dodboise2019.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'reveal.js-3.6.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1>Loving DevOps by Distrusting Everything</h1><h4>Tyler Langlois</h4><h4>Principal&nbsp;Software&nbsp;Engineer&nbsp;@&nbsp;Elastic</h4><h6>30 May, 2019</h6>
+</section>
+
+<section>
+<section id="slide-orga3aabdc">
+<h2 id="orga3aabdc"><code>whoami</code></h2>
+<ul>
+<li>Devops/software engineering at Elastic</li>
+<li>Miscellaneous experience ranging from building datacenters to webapps</li>
+<li>Would love to talk to you about ARM, functional programming, Boise tech, and my dog Morty</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgeababf2">
+<h2 id="orgeababf2">I apologize in advance</h2>
+<aside class="notes">
+<p>
+I'm sorry for what I'm about to do to you
+</p>
+
+</aside>
+
+</section>
+<section >
+<div class="org-src-container">
+
+<pre  class="src src-console">$ sudo rpm -i st2common-0.11.0-6.noarch.rpm
+error: Failed dependencies:
+    python(abi) = 2.7 is needed by st2common-0.11.0-6.noarch
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Anybody ever suffer through package manager dependency errors?
+</p>
+
+</aside>
+
+</section>
+<section >
+<div class="org-src-container">
+
+<pre  class="src src-console">$ docker run hello-world
+Unable to find image 'hello-world:latest' locally
+Pulling repository docker.io/library/hello-world
+Network timed out while trying to connect to https://index.docker.io/v1/repositories/library/hello-world/images. You may want to check your internet connection or if you are behind a proxy.
+</pre>
+</div>
+
+<aside class="notes">
+<ul>
+<li>How about network problems?</li>
+<li>I thought about fixing this slide, but work wrapping failures felt fitting for this presentation</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section >
+<div class="org-src-container">
+
+<pre  class="src src-console">error: unknown filesystem.  
+grub rescue&gt;
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+I included this one since it's probably the error I react to with the most primal sense of fear for
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgfc9c8b7">
+<h2 id="orgfc9c8b7">DevOps Friction</h2>
+<p>
+These things are:
+</p>
+<ul>
+<li class="fragment appear">annoying</li>
+<li class="fragment appear">a waste of our attention</li>
+<li class="fragment appear">the reason we're employed</li>
+
+</ul>
+
+<aside class="notes">
+<p>
+All of these things are hazards of the job but realities about life.
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgdb48c76">
+<h3 id="orgdb48c76">Friction</h3>
+<p class="fragment (appear)">
+In physics, a spherical cow in a vacuum is easy to simulate.
+</p>
+<p class="fragment (appear)">
+In operations, deployment, development, and other high-level workflows are easy <i>if nothing ever breaks</i>
+</p>
+
+<aside class="notes">
+<p>
+The point here is that we can harp on exciting tools and practices all day, but things will break, and that incurs a cost. Experiencing friction <i>will</i> happen, regardless of most carefully laid plans.
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgb569343">
+<h3 id="orgb569343">Emotional Friction</h3>
+<p>
+Suffering through broken things <i>constantly</i>&#x2026; is not fun
+</p>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/crazy.jpg" alt="crazy.jpg" />
+</p>
+</div>
+
+<aside class="notes">
+<ul>
+<li>I've been caught in the technical debt treadmill before, and it's horrible</li>
+<li>Don't wait for the debt to incur interest that devours all of your time</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-org8b2220c">
+<h3 id="org8b2220c">Get greasy</h3>
+<p>
+It's not <i>only</i> about being less miserable!
+</p>
+<ul>
+<li class="fragment appear">Less breakage = more uptime</li>
+<li class="fragment appear">More uptime = more solutions, less break/fix</li>
+
+</ul>
+
+<aside class="notes">
+<p>
+Also, none of us need me to cite a study to prove that you'll be more useful to the business if you aren't spending time staring at <code>top</code> for 3 hours a day
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgca8f5e2">
+<h2 id="orgca8f5e2">Never trust a computer</h2>
+<p class="fragment (appear)">
+Friction, waste, downtime, you ulcer - whatever you call it, how do we mitigate it?
+</p>
+
+<aside class="notes">
+<ul>
+<li>Let's get into the meat of this presentation and talk about how to love the work by fixing it with principles.</li>
+<li><b>If you can't tell, half of this talk is about the <i>process</i> - hopefully this means you can apply it to your specific environment.</b></li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-org04144ce">
+<h3 id="org04144ce">Navel-gazing-driven development</h3>
+<p>
+What can we learn from the past decade of operational trends?
+</p>
+
+<aside class="notes">
+<p>
+I think some of the most important lessons can come from observing what <i>direction</i> the discipline of DevOps has tended towards. Good ideas grow and propagate, bad ideas have tended to die on the vine.
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/vt.png" alt="vt.png" />
+</p>
+</div>
+
+<p class="fragment (appear)">
+Distrusting your <i>installation</i>
+</p>
+
+<aside class="notes">
+<p>
+Back in the day when virtual machines were exciting, they served a number of purposes, an important one being "this is something I can create, duplicate, and destroy without worrying too much about it"
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/cloud.png" alt="cloud.png" class="standalone" /> 
+</p>
+</div>
+
+<p class="fragment (appear)">
+Distrusting your <i>hardware</i>
+</p>
+
+<aside class="notes">
+<p>
+The cloud was a natural extension of the VM idea, only now you're hedging your bets against your hardware being reliable
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/containers.jpg" alt="containers.jpg" style="width:50%;height:50%" class="standalone" /> 
+</p>
+</div>
+
+<p class="fragment (appear)">
+Distrusting <i>the operating system</i>
+</p>
+
+<aside class="notes">
+<p>
+Containers take this one step further by expressing that "we don't really care about the peripherals, fake hardware, or anything like it - give me an OS, and let me die"
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/k8s-comic.png" alt="k8s-comic.png" /> 
+</p>
+</div>
+
+<p class="fragment (appear)">
+Distrusting <i>your container runtime</i>
+</p>
+
+<aside class="notes">
+<p>
+Kubernetes and/or Docker Swarm further codify the parts of <i>operating</i> a container so containers can be arbitrary composed with even <i>more</i> abstractions for storage, network traffic, and secrets. Plus, we kill pods willy-nilly.
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<div class="figure">
+<p><img src="images/thanos.jpeg" alt="thanos.jpeg" class="standalone" />
+</p>
+</div>
+
+<p>
+The natural conclusion
+</p>
+
+<aside class="notes">
+<p>
+The natural end result is to just distrust computers <i>and</i> operators and retire to a life of farming at the edge of the universe.
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org1dd8752">
+<h4 id="org1dd8752">Isn't it about resource efficiency?</h4>
+
+<div class="figure">
+<p><img src="images/tetris.png" alt="tetris.png" class="standalone" style="width:50%;height:50%" /> 
+</p>
+</div>
+
+<p>
+Bin Packing
+</p>
+
+<aside class="notes">
+<p>
+One could argue that VMs, containers, and the cloud are about efficiency - i.e., buying resources on-demand and fitting processes into small runtimes.
+</p>
+
+</aside>
+
+</section>
+<section >
+<p>
+&#x2026;using a new operating system each time isn't efficient
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-sh">$ docker images | sort -k7 -h | awk <span style="color: #2d9574;">'{ print $NF; }'</span> <span style="color: #2d9574;">\</span>
+    | uniq | tr <span style="color: #2d9574;">'\n'</span> <span style="color: #2d9574;">' '</span> | fold -s -w <span style="color: #a45bad;">40</span>
+SIZE <span style="color: #a45bad;">1.84kB</span> <span style="color: #a45bad;">109MB</span> <span style="color: #a45bad;">127MB</span> <span style="color: #a45bad;">160MB</span> <span style="color: #a45bad;">191MB</span>
+<span style="color: #a45bad;">195MB</span> <span style="color: #a45bad;">202MB</span> <span style="color: #a45bad;">206MB</span> <span style="color: #a45bad;">288MB</span> <span style="color: #a45bad;">298MB</span> <span style="color: #a45bad;">390MB</span>
+<span style="color: #a45bad;">594MB</span> <span style="color: #a45bad;">644MB</span> <span style="color: #a45bad;">645MB</span> <span style="color: #a45bad;">685MB</span> <span style="color: #a45bad;">697MB</span> <span style="color: #a45bad;">706MB</span>
+<span style="color: #a45bad;">711MB</span> <span style="color: #a45bad;">750MB</span> <span style="color: #a45bad;">752MB</span> <span style="color: #a45bad;">812MB</span> <span style="color: #a45bad;">842MB</span> <span style="color: #a45bad;">879MB</span>
+<span style="color: #a45bad;">917MB</span> <span style="color: #a45bad;">918MB</span> <span style="color: #a45bad;">922MB</span> <span style="color: #a45bad;">929MB</span> <span style="color: #a45bad;">935MB</span> <span style="color: #a45bad;">1.06GB</span>
+<span style="color: #a45bad;">1.07GB</span> <span style="color: #a45bad;">9.56GB</span>
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Also, I have seen Cloud bills that would also disagree with the efficiency sentiment
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgfbdcbca">
+<h2 id="orgfbdcbca">Learning from history</h2>
+<p>
+Common factors
+</p>
+
+<p class="fragment (appear)">
+Practices that were repeated, scaled up, or focused on
+</p>
+
+<aside class="notes">
+<p>
+Let's summarize some common threads between these solutions that evolved over time
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgce7015d">
+<h3 id="orgce7015d">Repeatability</h3>
+<p>
+"Can I recreate this if:"
+</p>
+<ul>
+<li class="fragment appear">It breaks and I need to build a new one?</li>
+<li class="fragment appear">I need to build more to scale out?</li>
+<li class="fragment appear"><p>
+I've forgotten what the steps are?
+</p>
+
+<aside class="notes">
+<p>
+These are all reactionary features that bubble up because things break, outgrow themselves, and are products of humans
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+<section >
+<ul>
+<li class="fragment appear">Virtual Machine images</li>
+<li class="fragment appear">Container images</li>
+<li class="fragment appear"><p>
+Kubernetes pods (or, modern-day "have you tried rebooting it?")
+</p>
+
+<aside class="notes">
+<p>
+If you've used Vagrant/virtualbox and debugged production k8s systems, you know how beneficial "I don't care about this image" can be
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+<section id="slide-org4a42b3e">
+<h3 id="org4a42b3e">Processes as Artifacts</h3>
+<p>
+How do you record, version, and share operational knowledge?
+</p>
+<ul>
+<li class="fragment appear">The rise of configuration management</li>
+<li class="fragment appear">Codifying imperative tasks</li>
+<li class="fragment appear"><p>
+APIs over hands on hardware
+</p>
+
+<aside class="notes">
+<p>
+This is a big one: you cannot audit, track, share, and version anything that you cannot write down
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+<section >
+<ul>
+<li class="fragment appear">Runbooks as Ansible playbooks or Rundeck jobs</li>
+<li class="fragment appear">Recording history like traditional devs do in VCS/git history</li>
+<li class="fragment appear"><p>
+Next-generation: Kubernetes operators
+</p>
+
+<aside class="notes">
+<p>
+Don't limit yourself to packaged solutions: when there's not something, cobble it together, and documentation is always the lowest common denominator
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+<section id="slide-org3bc1b55">
+<h3 id="org3bc1b55">More Abstraction</h3>
+<p>
+Executables → Entire Machines → Load Balancers → All Operations
+</p>
+<ul>
+<li class="fragment appear">From bare-metal hypervisors to Kubernetes: <b>API</b> s</li>
+<li class="fragment appear">ISOs → Config Management → Declarative (yaml, cloud-config, AMIs)</li>
+<li class="fragment appear"><p>
+<i>Everybody</i> wants the Heroku/Travis CI experience
+</p>
+
+<aside class="notes">
+<p>
+Think about how generally-applicable software engineering practices can also apply to operations
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org8e0c1e1">
+<h2 id="org8e0c1e1">Let's practice extreme distrust</h2>
+<p class="fragment">
+Wisdom of the ancients to apply:
+</p>
+<ul class="fragment">
+<li>Repeatability</li>
+<li>Codified process</li>
+<li><p>
+Abstraction
+</p>
+
+<aside class="notes">
+<p>
+How can we make use of each for actual, real-world problems?
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgcbe480d">
+<h2 id="orgcbe480d">Contain your enthusiasm</h2>
+<p>
+Version incompatibilities <i>everywhere</i>
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-text">Terraform doesn't allow running any operations against a state
+that was written by a future Terraform version. The state is
+reporting it is written by Terraform '0.11.1'.
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Not just mismatched versions either: how do you ensure operators use the right version, and manage updates in shared teams?
+</p>
+
+<p>
+These points apply not only to operators, but runtimes for applications, etc.
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgf708d2a">
+<h3 id="orgf708d2a">Level 1: Explicit versioning</h3>
+<p>
+Maybe?
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-sh">$ cat .tool-versions
+python <span style="color: #a45bad;">3.6.0</span>
+helm <span style="color: #a45bad;">2.8.2</span>
+terraform <span style="color: #a45bad;">0.11.0</span>
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+At least <i>noting</i> what is known to work is a huge step above "maybe you'll hit an unexpected snag and add 20 minutes to your day"
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org9f33772">
+<h3 id="org9f33772">Level 2: Contain It!</h3>
+<p>
+Only prerequisite is Docker, everyone runs the same bits.
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-shell">$ docker run --rm --interactive <span style="color: #2d9574;">\</span>
+    hashicorp/terraform:0.11.1 <span style="color: #2d9574;">\</span>
+    plan
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Newer tools are starting to adopt the immutable/frozen-in-time snapshot of comparability (rustup, stack, etc.)
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org83e9746">
+<h3 id="org83e9746">Level 3: Stop running it!</h3>
+<ul>
+<li class="fragment appear">Drive all changes with a typical CI/CD deployment workflow!</li>
+<li class="fragment appear"><code>plan</code> your pull requests</li>
+<li class="fragment appear"><code>apply</code> on merge to master</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="images/jenkins.png" alt="jenkins.png" class="standalone" />
+</p>
+</div>
+
+<aside class="notes">
+<p>
+Not only do you have a cleanroom environment, but you avoid clobbering parallelism, gain the benefit of <b>process</b> and code review, and audit trails
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org2a56e50">
+<h2 id="org2a56e50">Distributing Distrust</h2>
+<p>
+Not <i>if</i> your service will die, but <i>when</i>
+</p>
+
+
+<div class="figure">
+<p><img src="images/502.png" alt="502.png" />
+</p>
+</div>
+
+<aside class="notes">
+<p>
+Being proactive in assuming that services fail is second nature to some operators, but you can apply principles of distrust in many pieces
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org7594c5b">
+<h3 id="org7594c5b">Yo, I heard you like to distribute your services</h3>
+
+<div class="figure">
+<p><img src="images/modern_solutions.jpg" alt="modern_solutions.jpg" class="standalone" />
+</p>
+</div>
+
+<p class="fragment (appear)">
+Congratulations, now your problem is <a href="https://en.wikipedia.org/wiki/CAP_theorem" class="fragment (appear)">CAP</a>
+</p>
+
+<aside class="notes">
+<p>
+This isn't a perfect solution - introducing distributed systems has its own problems
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org732e198">
+<h3 id="org732e198">Consensus: It's probably worth it</h3>
+<p>
+Today's platforms <i>assume</i> a many-replica architecture
+</p>
+
+<p class="fragment (appear)">
+kubernetes, EC2 ASGs, GCP instance groups, nomad, consul, Elasticsearch, etcd, etc. etc.
+</p>
+
+<aside class="notes">
+<p>
+They're a boon in and of themselves, but designing with distribute runtimes in mind informs good design decisions (failover, 12 factor, etc.0
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org34449b4">
+<h3 id="org34449b4">General Principles</h3>
+<ul>
+<li class="fragment appear">Is there a distributed version of <code>$x</code> I can use?</li>
+<li class="fragment appear">Failing that, can I distribute it <i>myself</i>?</li>
+
+</ul>
+
+<aside class="notes">
+<ul>
+<li>Things like traefik for web serving, cockroachdb for sql, Elasticsearch for freetext search</li>
+<li>The DIY route means replicating your block store backend, for example</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-org4d7e9e8">
+<h3 id="org4d7e9e8">What a beautiful, modern, only kind-of-broken world</h3>
+<ul>
+<li class="fragment appear">Object storage (minio?)</li>
+<li class="fragment appear">SQL (cockroachdb?)</li>
+<li class="fragment appear">Search (elasticsearch?)</li>
+<li class="fragment appear">Ops (kubernetes, nomad)</li>
+<li class="fragment appear"><p>
+Secrets (vault)
+</p>
+
+<aside class="notes">
+<ul>
+<li>Luckily, modern software has many options! Especially greenfield, you don't need to settle for fragile systems.</li>
+<li>These are all ways to plan ahead for a time when runtime <code>$y</code> is going to fail, and you want to be ready.</li>
+
+</ul>
+
+</aside></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orga7b033e">
+<h2 id="orga7b033e">Alerting</h2>
+<p>
+I tend to build systems that (wrongly) assume:
+</p>
+<ul>
+<li class="fragment appear">I have arrived in my seat and read my email by 9am.</li>
+<li class="fragment appear">I have entered an on-call rotation once I'm well-fed and prepared at 1pm.</li>
+<li class="fragment appear">One alert comes in that I can resolve without assistance during this period that I know how to solve.</li>
+<li class="fragment appear"><p>
+Done until next time!
+</p>
+
+<aside class="notes">
+<ul>
+<li>I've since learned, but this is my old way</li>
+<li>Assumption is that there's little overlap, things don't flap, and <i>everything</i> is documented!</li>
+
+</ul>
+
+</aside></li>
+
+</ul>
+
+</section>
+<section id="slide-org79066f0">
+<h3 id="org79066f0">Reality</h3>
+
+<div class="figure">
+<p><img src="images/delights.png" alt="delights.png" class="standalone" />
+</p>
+</div>
+
+<aside class="notes">
+<p>
+this is Bosch's <i>Garden of Earthly Delights</i>, and it summarizes how I feel during a bad on-call
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org42bf2b2">
+<h3 id="org42bf2b2">Abstractions</h3>
+<ul>
+<li class="fragment appear">I don't care that a request 502'd. I care that the rate is 100% above what is was 60 seconds ago.</li>
+<li class="fragment appear">Don't tell me that a disk is 100% full, <i>warn</i> me now that it'll be 100% in 48 hours.</li>
+<li class="fragment appear">I do not care if a webserver container is at high load. I care if end-user response time P95 is &gt;=5s.</li>
+
+</ul>
+
+<aside class="notes">
+<p>
+These are ways to lift the visibility from <i>machine</i>-level concerns to <i>service</i>-level concerns
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgf15b23f">
+<h2 id="orgf15b23f">Living well in the shell</h2>
+<p>
+Hypothesis: the command line is currently the absolute best user interface to a computer for technical operators
+</p>
+
+<p class="fragment (appear)">
+&#x2026;because&#x2026;
+</p>
+
+<aside class="notes">
+<p>
+Another place to exercise this principles is in <i>how</i> you work - little optimizations here compound significantly
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org2112d29">
+<h3 id="org2112d29">Tangible artifacts</h3>
+<p>
+&#x2026;because this is tangible instead of telling the new team member "click on this page in the AWS console"
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-sh">aws --region us-east-1 ec2 describe-instances <span style="color: #2d9574;">\</span>
+  --filter <span style="color: #2d9574;">"Name=tag:Name,Values=*myhost*"</span> <span style="color: #2d9574;">\</span>
+  | jq -r <span style="color: #2d9574;">'</span>
+<span style="color: #2d9574;">    .Reservations \</span>
+<span style="color: #2d9574;">      | map(.Instances) \</span>
+<span style="color: #2d9574;">      | flatten \</span>
+<span style="color: #2d9574;">      | map(select(.State.Name | contains("running")))</span>
+<span style="color: #2d9574;">  '</span>
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Key here is to try and turn anything you do into a shell command - then it becomes a recorded, re-usable, composable, shareable history
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgc69f2ba">
+<h3 id="orgc69f2ba">Repeatable</h3>
+
+<div class="figure">
+<p><object type="image/svg+xml" data="images/fzf.svg" class="org-svg">
+Sorry, your browser does not support SVG.</object>
+</p>
+</div>
+
+<aside class="notes">
+<ul>
+<li>Fuzzy finding plus saving everything you do is extraordinarily powerful</li>
+<li>It means I have fuzzy text search for a decade of operational experience</li>
+<li>Story about my wife telling me to copy over shell history</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-org6cc0643">
+<h3 id="org6cc0643">So, so many things</h3>
+<ul>
+<li>Chances are high you'll see similar problems &gt; 1 time</li>
+<li>Ad-hoc fixes become serviceable solutions</li>
+<li>Composing your commands = force multiplier</li>
+<li>Tab completion superpowers</li>
+<li><p>
+Blurring the line between work and programming (control structures, variables, etc.)
+</p>
+
+<aside class="notes">
+<p>
+Shell expertise is probably one of the highest skill ceilings you can continually practice
+</p>
+
+</aside></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org5144631">
+<h2 id="org5144631">tl;dr</h2>
+<p>
+Was there any point to this presentation?
+</p>
+
+
+<div class="figure">
+<p><img src="images/fry.jpg" alt="fry.jpg" style="width:50%;height:50%" class="standalone" />
+</p>
+</div>
+
+<aside class="notes">
+<p>
+What things are useful for you to take back to work?
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org953ff8c">
+<h3 id="org953ff8c">Don't let the computers win</h3>
+<p>
+Turn frustrations into technical achievements!
+</p>
+
+
+<div class="figure">
+<p><img src="images/terminator.jpg" alt="terminator.jpg" style="width:50%;height:50%" class="standalone" />
+</p>
+</div>
+
+<aside class="notes">
+<ul>
+<li>First and foremost, don't die a death of a thousand cuts.</li>
+<li>Identify the high-frequency, loud, and painful events, and start whittling</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-orgb7466df">
+<h3 id="orgb7466df">Hedge your bets against the computers</h3>
+<p>
+Assume everything is going to break, all the time, and merrily build around your pessimism
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #ce537a; font-weight: bold;">@retry</span><span style="color: #4f97d7;">(</span>wait=wait_exponential<span style="color: #bc6ec5;">(</span>multiplier=<span style="color: #a45bad;">1</span>, <span style="color: #4f97d7;">min</span>=<span style="color: #a45bad;">1</span>, <span style="color: #4f97d7;">max</span>=<span style="color: #a45bad;">60</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">perform_something_over_the_network</span><span style="color: #4f97d7;">()</span>:
+</pre>
+</div>
+
+<aside class="notes">
+<p>
+Anecdote about Toby and coding around network failures
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org7d7560a">
+<h3 id="org7d7560a">Build with a face towards the future</h3>
+<ul>
+<li class="fragment appear">Express infrastructure in code where possible, then markup, then literate documentation</li>
+<li class="fragment appear">Factor out operations that must be completed by a human at a keyboard</li>
+<li class="fragment appear">Build services that can <i>assume</i> failure ranging from OS to OSI layer 7</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="images/mypart.jpg" alt="mypart.jpg" style="width:25%;height:25%" />
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orge9bf57c">
+<h2 id="orge9bf57c">Thank you ∨ Q&amp;A</h2>
+</section>
+</section>
+</div>
+</div>
+<script src="reveal.js-3.6.0/lib/js/head.min.js"></script>
+<script src="reveal.js-3.6.0/js/reveal.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+pdfSeparateFragments: true,
+
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'slide', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'reveal.js-3.6.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'reveal.js-3.6.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'reveal.js-3.6.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'reveal.js-3.6.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'reveal.js-3.6.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
