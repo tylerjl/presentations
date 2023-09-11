@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>I Cloned Twelve Ops Engineers with Nix</title>
+<meta name="author" content="Tyler Langlois"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/theme/night.css" id="theme"/>
+
+<link rel="stylesheet" href="custom.css"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide" data-timing="20">
+<h1>I Cloned Twelve Ops Engineers with Nix</h1><h3>DevOpsDays Boise 2023</h3><h4>Tyler Langlois</h4><h6>12 September</h6>
+</section>
+
+<section>
+<section id="slide-orge646727">
+<h2 id="orge646727"><code>whoami</code></h2>
+<div class="columns">
+
+<div style="text-align:left;">
+<p>
+Many-hats Engineer at <b>Bowtie</b> (remote, very early stage start-up)
+</p>
+
+<p>
+Likes
+</p>
+<ul>
+<li>OSS &amp; Functional programming (Haskell, Lisp, Nix)</li>
+<li>Bleeding-edge old technology (unstable <code>emacs</code> 🙃)</li>
+<li>Small orgs and moving fast (frequent fleer of hypergrowth 📈)</li>
+
+</ul>
+</div>
+
+
+<div id="org6dbf0d3" class="figure">
+<p><img src="seasonal-headshot.jpg" alt="seasonal-headshot.jpg" style="width:30rem;" />
+</p>
+</div>
+
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org21484f9">
+<h2 id="org21484f9">What Will We Talk About?</h2>
+<p>
+We'll talk about <i>specific</i> technologies<sub>(whoops!)</sub> but in <i>general</i>:
+</p>
+
+<p class="fragment fade-in-then-semi-out">
+<b>What are some high-leverage ways to scale operational engineering?</b>
+</p>
+
+<p class="fragment fade-in-then-semi-out">
+<b>How do we approach novel tools and evaluate benefits and drawbacks?</b>
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org35912a2">
+<h2 id="org35912a2">Background</h2>
+<div class="outline-text-2" id="text-org35912a2">
+</div>
+</section>
+<section id="slide-org5784998">
+<h3 id="org5784998">Marketing-free Product Overview</h3>
+<div class="columns" style="grid-template-columns:1fr 2fr;">
+
+
+<div id="org88b2440" class="figure">
+<p><img src="bowtie-chart.png" alt="bowtie-chart.png" />
+</p>
+</div>
+
+<ul>
+<li>Self-hosted private networking</li>
+<li>Client packages
+<ul>
+<li>(think: Windows/MacOS/Linux, mobile)</li>
+
+</ul></li>
+<li class="fragment">👉 <i>Server</i> packaging 👈</li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-orgfac0da8">
+<h3 id="orgfac0da8">Story Time</h3>
+<div class="columns">
+
+<div style="text-align:center;" class="r-stack" id="org0f5e404">
+
+<div id="org0fff7b6" class="figure">
+<p><img src="caps-for-sale.jpg" alt="caps-for-sale.jpg" width="70%" />
+</p>
+</div>
+
+<div id="org3eb4060" class="figure">
+<p><img src="limes.png" alt="limes.png" data-fragment-index="1" width="70%" class="fragment smash" />
+</p>
+</div>
+
+</div>
+
+<div>
+<div class="r-stack" id="orgf82bb13">
+<div class="fragment custom very-fade-out" data-fragment-index="1">
+<p>
+The startup experience is many-hats devops:
+</p>
+
+<ul>
+<li>CI/CD &amp; testing</li>
+<li>Product packaging &amp; releases</li>
+<li>Configuration management &amp; fleet orchestration</li>
+<li>Observability</li>
+<li>Technical writing</li>
+
+</ul>
+</div>
+
+<p data-fragment-index="1" style="font-size:5rem;text-align:center;" class="fragment appear">
+<b>CONGRATS!!! IT'S YOUR PROBLEM NOW</b> CYA
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<aside class="notes">
+<p>
+Explain a little about what it's like at a small, early-stage startup
+</p>
+
+</aside>
+
+</section>
+<section>
+
+<p>
+"There's a catch-all solution for this"
+</p>
+
+<div id="org9e494c8" class="figure">
+<p><img src="island.png" alt="island.png" />
+</p>
+</div>
+
+<p class="fragment appear">
+<i>&#x2026;maybe</i>. But we’re going to think smaller
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgab6c9fc">
+<h2 id="orgab6c9fc">12 Problems</h2>
+<p>
+☁️ 9 Different platforms
+</p>
+
+<p class="inverted" style="text-shadow:none;">
+➕
+</p>
+
+<p>
+⚙️ Configuration management
+</p>
+
+<p class="inverted" style="text-shadow:none;">
+➕
+</p>
+
+<p>
+📈 Developer experience
+</p>
+
+<p class="inverted" style="text-shadow:none;">
+➕
+</p>
+
+<p>
+🧪 Testing
+</p>
+
+</section>
+<section id="slide-org991253c">
+<h3 id="org991253c">Technology and Cautionary Tales</h3>
+<ul>
+<li class="fragment fade-in-then-semi-out">How to scale yourself when risk isn’t "we missed an OKR", but "the startup is out of money?"</li>
+<li class="fragment fade-in-then-semi-out">Buy vs. build to bridge the gap? Are we more strapped for cash or time?</li>
+<li class="fragment fade-in-then-semi-out">Prioritization is <i>good</i> but can only take you so far</li>
+
+</ul>
+
+<p class="fragment">
+some secret, third thing
+</p>
+
+</section>
+<section id="slide-orgc7face2" data-background="scream.jpg" data-timing="10">
+<h3 id="orgc7face2">USE WEIRD, FRINGE SOFTWARE</h3>
+
+</section>
+</section>
+<section>
+<section id="slide-orgd8cb25d">
+<h2 id="orgd8cb25d">☁ 9 Platforms</h2>
+<ul>
+<li class="fragment fade-in-then-semi-out">Create a <i>network appliance</i> that supports these platforms
+<ul>
+<li>Cloud, on-premise, and containers</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Lifecycle management
+<ul>
+<li>Getting updates to self-hosted environments?</li>
+
+</ul></li>
+
+</ul>
+
+<div class="columns" style="gap: 0.2rem;">
+
+
+<div id="orga8677d7" class="figure">
+<p><img src="aws-logo-vector.svg" alt="aws-logo-vector.svg" class="org-svg" />
+</p>
+</div>
+
+
+<div id="orgced78c4" class="figure">
+<p><img src="gcp-logo.png" alt="gcp-logo.png" />
+</p>
+</div>
+
+
+<div id="org3853fc4" class="figure">
+<p><img src="azure-logo.png" alt="azure-logo.png" />
+</p>
+</div>
+
+
+<div id="org23f49a1" class="figure">
+<p><img src="hyperv.png" alt="hyperv.png" />
+</p>
+</div>
+
+
+<div id="orgc64bb64" class="figure">
+<p><img src="proxmox.png" alt="proxmox.png" />
+</p>
+</div>
+
+
+<div id="org7d5066a" class="figure">
+<p><img src="vmware.png" alt="vmware.png" />
+</p>
+</div>
+
+
+<div id="org7623e4e" class="figure">
+<p><img src="kvm.png" alt="kvm.png" />
+</p>
+</div>
+
+
+<div id="org98cd507" class="figure">
+<p><img src="docker.png" alt="docker.png" />
+</p>
+</div>
+
+
+<div id="org872a823" class="figure">
+<p><img src="k8s.png" alt="k8s.png" />
+</p>
+</div>
+
+</div>
+
+</section>
+<section id="slide-orga2aaf48">
+<h3 id="orga2aaf48">Constraints</h3>
+<ul>
+<li class="fragment fade-in-then-semi-out">Wide support: we need to support users where they are</li>
+<li class="fragment fade-in-then-semi-out">Automated as possible: single-digit <del>engineer</del> employee headcount!</li>
+<li class="fragment fade-in-then-semi-out">Testable: can't scale without assurances at release time</li>
+<li class="fragment fade-in-then-semi-out">Config-manageable: need to define and enforce system profile</li>
+
+</ul>
+
+</section>
+<section id="slide-orgfecde2f" data-auto-animate>
+<h3 id="orgfecde2f">The Hashicorp in the Room</h3>
+<div class="columns">
+
+
+<div id="orgaa008a4" class="figure">
+<p><img src="packer.svg" alt="packer.svg" class="org-svg" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">The gold standard</li>
+<li class="fragment fade-in-then-semi-out">Covers all desired platforms</li>
+<li class="fragment fade-in-then-semi-out"><i>Lots</i> of documentation, support, and examples</li>
+<li class="fragment fade-in-then-semi-out">Supports automation, testing, and configuration management</li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-org3de90be">
+<h3 id="org3de90be"><i>&#x2026;maybe</i></h3>
+<div class="columns">
+
+
+<div id="org91c34a1" class="figure">
+<p><img src="packer.svg" alt="packer.svg" class="org-svg" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Tight coupling
+<ul>
+<li>e.g., if you want to build a Proxmox image, have to manage it</li>
+<li>Footprint adds up with <code>n</code> platforms to support!</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Reproducability
+<ul>
+<li>Can I build an image today and create the same image tomorrow?</li>
+<li>Shifting dependencies introduces unpredictability (LTS can sort of help here)</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-org079c8ba" data-timing="15">
+<h3 id="org079c8ba">Hol Up</h3>
+<p>
+What if we tried something <i>really</i> different
+</p>
+
+
+<div id="orgcbe3fdf" class="figure">
+<p><img src="swerve.jpg" alt="swerve.jpg" />
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org2355b3a">
+<h2 id="org2355b3a">Nix</h2>
+<div class="columns">
+
+
+<div id="orgb13b746" class="figure">
+<p><img src="nix-logo.svg" alt="nix-logo.svg" class="org-svg" />
+</p>
+</div>
+
+<div>
+<ul>
+<li>Nix is a functional, declarative language for defining how to build things:
+<ul>
+<li>Packages (via <code>github.com/NixOS/nixpkgs</code>)</li>
+<li>Operating systems (NixOS)</li>
+
+</ul></li>
+
+</ul>
+
+<p class="fragment">
+&#x2026;really, anything that ends up being files (container tarballs, etc.)
+</p>
+</div>
+
+</div>
+
+<aside class="notes">
+<p>
+I don't want to sound dramatic, but I feel the same way I do about nix as I did about Docker in the 2010's
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org4a87d61">
+<h3 id="org4a87d61">Why Should I Care?</h3>
+<div class="outline-text-3" id="text-org4a87d61">
+</div>
+</section>
+<section id="slide-org92fd444">
+<h4 id="org92fd444">Explicit Dependencies</h4>
+<p>
+Impossible to ship built artifacts to targets with mismatched dependencies:
+</p>
+
+<div class="org-src-container">
+
+<pre class="fragment appear">$ ./exe
+libstdc++.so.6: cannot open shared object file: No such file or directory
+</pre>
+</div>
+
+<p class="fragment appear">
+Not only shared libraries, but all kinds of dependencies: in-<code>$PATH</code> programs, toolchain versions, etc.
+</p>
+
+</section>
+<section id="slide-org219731c" data-auto-animate>
+<h4 id="org219731c">Pure Outputs</h4>
+<p>
+Changes to real-world time, downloads, and build environment (like environment variables) can't impact build viability
+</p>
+
+<p class="fragment appear">
+Every input to your build is <i>hashed</i> based upon its contents
+</p>
+
+<p style="color:#7cfc00;" class="fragment appear">
+Buried lede: nix has <i>total</i> knowledge of how to build software
+</p>
+
+</section>
+<section id="slide-org2cc2a05" data-auto-animate>
+<h4 id="org2cc2a05">Abstract Syntax Trees?</h4>
+<p style="color:#7cfc00;">
+Buried lede: nix has <i>total</i> knowledge of how to build software
+</p>
+
+<div class="columns" style="justify-items:center;align-items:start;">
+<object style="height:50%;" data="ast-math.svg" type="image/svg+xml"></object>
+<object class="fragment fade-in" style="height:50%;" data="ast-ripgrep.svg" type="image/svg+xml"></object>
+</div>
+
+</section>
+<section data-auto-animate>
+
+<p style="color:#7cfc00;">
+Buried lede: nix has <i>total</i> knowledge of how to build software
+</p>
+
+<p>
+What if we took the <i>intermediate form</i> of our system configuration &#x2013; the abstract form &#x2013; and then constructed different end results?
+</p>
+
+<p style="filter:opacity(50%);" class="fragment">
+<i>(this is sort of analogous to a Puppet catalog or a CloudFormation JSON if you squint)</i>
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org26e36bd" data-auto-animate>
+<h2 id="org26e36bd">☁ 9 Platforms (again)</h2>
+<p>
+What if we took the <i>intermediate form</i> of our system configuration &#x2013; the abstract form &#x2013; and then constructed different end results?
+</p>
+
+
+<div id="org2e8a97d" class="figure">
+<p><img src="ast-nix.png" alt="ast-nix.png" />
+</p>
+</div>
+
+</section>
+<section data-auto-animate>
+
+
+<div id="org4621d2f" class="figure">
+<p><img src="nixos-generators.png" alt="nixos-generators.png" width="40%" />
+</p>
+</div>
+
+<p>
+What if we took the <i>intermediate form</i> of our system configuration &#x2013; the abstract form &#x2013; and then constructed different end results?
+</p>
+
+</section>
+<section id="slide-org812c7b8">
+<h3 id="org812c7b8">What does it look like?</h3>
+<div class="org-src-container">
+
+<pre class="src src-nix"><span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">imports</span> = <span style="color: #ff995e;">[</span>
+    nixos-generators.nixosModules.all-formats
+  <span style="color: #ff995e;">]</span>;
+
+  <span style="color: #82aaff;">services</span> = <span style="color: #ff995e;">{</span>
+    <span style="color: #82aaff;">caddy.enable</span> = <span style="color: #4fd6be;">true</span>;
+    <span style="color: #82aaff;">minio.enable</span> = <span style="color: #4fd6be;">true</span>;
+  <span style="color: #ff995e;">}</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org873a454">
+<h3 id="org873a454">nixos-generators</h3>
+<p>
+<i>Compile</i> a system into arbitrary forms:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-bash">$ nix build .#qcow 
+$ file result/nixos.qcow2
+result/nixos.qcow2: QEMU QCOW Image <span style="color: #c099ff;">(</span>v3<span style="color: #c099ff;">)</span>
+$ nix build .#vmware 
+$ file result/nixos-vmware-x86_64-linux.vmdk
+result/nixos-vmware-x86_64-linux.vmdk: VMware4 disk image
+</pre>
+</div>
+
+</section>
+<section id="slide-orgc5de610">
+<h3 id="orgc5de610">Key Benefits</h3>
+<ul>
+<li>Sidecar APIs aren't necessary
+<ul>
+<li>We know the necessary format and have the bits, just create it</li>
+<li>100% local, but it does mean implementing another 10% yourself to push to AWS/Azure</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out"><i>Easy</i> support for arbitrary formats
+<ul>
+<li>Adding a new platform takes a one-line change</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org7e9b118">
+<h3 id="org7e9b118">End Result</h3>
+
+<div id="org293368c" class="figure">
+<p><img src="bowtie-packages.png" alt="bowtie-packages.png" />
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org953a313">
+<h2 id="org953a313">⚙ Configuration Management</h2>
+<div class="columns" style="grid-template-columns:1fr 4fr;">
+
+
+<div id="org3f20177" class="figure">
+<p><img src="servers.png" alt="servers.png" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Managing <i>user-deployed</i> appliances
+<ul>
+<li>(scarier than owning the machines!)</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Deploying:
+<ul>
+<li>Our own server-side software</li>
+<li>Bundled load-bearing services</li>
+<li>Bundled utilities like and observability stack</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-org05c79f5">
+<h3 id="org05c79f5">Why or Why <i>Not</i>?</h3>
+<div class="columns twins" style="grid-template-columns: 1fr 3fr;">
+
+<div class="r-stack" id="org48364d2">
+
+<div id="org87e7fd7" class="figure">
+<p><img src="ansible-logo.png" alt="ansible-logo.png" style="filter:invert(100%);" />
+</p>
+</div>
+
+
+<div id="org46fe66f" class="figure">
+<p><img src="salt-stack.png" alt="salt-stack.png" />
+</p>
+</div>
+
+
+<div id="org830496d" class="figure">
+<p><img src="puppet-logo.png" alt="puppet-logo.png" />
+</p>
+</div>
+
+</div>
+
+<div class="r-stack" id="orgbbc17b6">
+<div class="fragment fade-out" data-fragment-index="3">
+<ul>
+<li data-fragment-index="1" class="fragment fade-in-then-semi-out">Is it <i>mature</i>?
+<ul>
+<li>Yes! Modern configuration management is pretty good</li>
+
+</ul></li>
+<li data-fragment-index="2" class="fragment fade-in-then-semi-out">Is the development UX story good enough?
+<ul>
+<li>Iterating locally and test infrastructure</li>
+
+</ul></li>
+
+</ul>
+</div>
+<div class="fragment fade-in" data-fragment-index="3">
+<ul>
+<li data-fragment-index="3" class="fragment fade-in-then-semi-out"><i>Mostly</i> a solved problem&#x2026;</li>
+<li data-fragment-index="4" class="fragment fade-in-then-semi-out">e.g., <a href="https://blog.verbum.org/2020/08/22/immutable-%e2%86%92-reprovisionable-anti-hysteresis/">anti-hysteresis systems</a> (blog.verbum.org, August 2020)</li>
+<li data-fragment-index="5" class="fragment fade-in-then-semi-out">How are you going to configure self-managed systems?</li>
+<li data-fragment-index="6" class="fragment fade-in-then-semi-out">Can we avoid complexity with declarative over imperative?</li>
+
+</ul>
+</div>
+
+</div>
+
+</div>
+
+</section>
+<section id="slide-orgc4880dd" class="config-management">
+<h3 id="orgc4880dd">Two Types of Config Management</h3>
+<div class="columns">
+
+<div class="r-stack" id="org2509ab3">
+<div class="fragment custom very-fade-out" data-fragment-index="2">
+<div class="org-src-container">
+
+<pre class="src src-yaml"><span style="color: #7a88cf;">---</span>
+- <span style="color: #ff98a4;">name</span>: Install nomad
+  <span style="color: #ff98a4;">package</span>:
+    <span style="color: #ff98a4;">name</span>: nomad
+    <span style="color: #ff98a4;">state</span>: latest
+  <span style="color: #ff98a4;">notify</span>:
+    - restart nomad
+</pre>
+</div>
+
+<p data-fragment-index="1" class="fragment">
+Ansible for imperative configuration steps
+</p>
+</div>
+
+<div class="fragment appear overlay" data-fragment-index="2">
+
+<div id="org7df238b" class="figure">
+<p><img src="packer-logo.svg" alt="packer-logo.svg" class="org-svg" />
+</p>
+</div>
+
+<p style="font-size=10rem;">
+➕
+</p>
+
+
+<div id="org798589a" class="figure">
+<p><img src="ansible-logo.png" alt="ansible-logo.png" />
+</p>
+</div>
+</div>
+
+</div>
+
+<div class="r-stack" id="orgf2c41ab">
+<div class="fragment custom very-fade-out" data-fragment-index="2">
+<div class="org-src-container">
+
+<pre class="src src-nix"><span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">services.nomad.enable</span> = <span style="color: #4fd6be;">true</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+
+<p data-fragment-index="1" class="fragment">
+Nix for declarative configuration state
+</p>
+</div>
+
+<div class="fragment appear" data-fragment-index="2">
+
+<div id="org4a1c696" class="figure">
+<p><img src="nix-logo.svg" alt="nix-logo.svg" class="org-svg" />
+</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</section>
+<section id="slide-org73024a1">
+<h3 id="org73024a1">Caveats</h3>
+<div class="columns">
+
+
+<div id="org30378c9" class="figure">
+<p><img src="breaking-bad.jpg" alt="breaking-bad.jpg" style="width:30rem;" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Had to extend the last 10%
+<ul>
+<li>Out of date modules or customizations</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Ever-inscrutable nix
+<ul>
+<li>Errors are hard when they come up (<code>infinite recursion</code>)</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-org8af15ff">
+<h3 id="org8af15ff">Benefits</h3>
+<div class="columns">
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Declarative
+<ul>
+<li>As a former Puppet module maintainer, happy to never write <code>exec</code> again</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Vast library of modules
+<ul>
+<li>Able to ship an observability stack with appliances (Grafana, Loki, OTEL, Prometheus)</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Testing/local iteration is trivial ("target a VM instead of an Amazon image")</li>
+
+</ul>
+
+
+<div id="org4ef4495" class="figure">
+<p><img src="breaking-bad.jpg" alt="breaking-bad.jpg" style="width:30rem;" />
+</p>
+</div>
+
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgfd3df41">
+<h2 id="orgfd3df41">📈 Developer UX</h2>
+
+<div id="orgacd03b4" class="figure">
+<p><img src="delights.png" alt="delights.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-org564e1d8">
+<h3 id="org564e1d8">Past, Present, and Future</h3>
+<div class="columns">
+
+
+<div id="org97ecf1b" class="figure">
+<p><img src="codespaces.png" alt="codespaces.png" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">"Here's a <code>README</code>, good luck"</li>
+<li class="fragment fade-in-then-semi-out"><code>docker-compose.yml</code> and virtual environments</li>
+<li class="fragment fade-in-then-semi-out">Future
+<ul>
+<li>Codespaces? Remote development environments?</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+</section>
+<section>
+
+
+<div id="org2d2a4d8" class="figure">
+<p><img src="cloudy-eyes.jpg" alt="cloudy-eyes.jpg" />
+</p>
+</div>
+
+</section>
+<section id="slide-org65b1e33">
+<h3 id="org65b1e33">What is a devshell?</h3>
+<div class="columns">
+
+<div class="r-stack" id="org2078d5a">
+<div class="org-src-container">
+
+<pre data-fragment-index="4" class="fragment fade-out"><span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">devshells.default</span> = mkShell <span style="color: #ff995e;">{</span>
+    <span style="color: #82aaff;">packages</span> = <span style="color: #ff98a4;">[</span>
+      rustc
+      python311
+      nodejs_20
+    <span style="color: #ff98a4;">]</span>;
+  <span style="color: #ff995e;">}</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre data-fragment-index="4" class="fragment fade-in"><span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">devshells.default</span> = mkShell <span style="color: #ff995e;">{</span>
+
+
+
+
+
+  <span style="color: #ff995e;">}</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre data-fragment-index="5" class="fragment fade-in"><span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">devshells.default</span> = mkShell <span style="color: #ff995e;">{</span>
+    <span style="color: #82aaff;">inputsFrom</span> = <span style="color: #ff98a4;">[</span>
+      backend
+      restapi
+      frontend
+    <span style="color: #ff98a4;">]</span>;
+  <span style="color: #ff995e;">}</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+
+</div>
+
+<ul>
+<li data-fragment-index="1" class="fragment fade-in-then-semi-out">Define programs that should be brought into <code>$PATH</code></li>
+<li data-fragment-index="2" class="fragment fade-in-then-semi-out">"Enter" the <code>devshell</code> via <code>nix develop .</code></li>
+<li data-fragment-index="3" class="fragment fade-in">Or, <i>automatically inject the build dependencies from the build instructions</i></li>
+
+</ul>
+
+</div>
+
+</section>
+<section id="slide-orgee27bdc">
+<h3 id="orgee27bdc">Development Environment Setup Steps</h3>
+<div class="org-src-container">
+
+<pre class="src src-bash">$ cd src/project
+</pre>
+</div>
+
+<p class="fragment">
+(full disclosure: <code>direnv</code> makes this possible with an <code>.envrc</code>)
+</p>
+
+<p class="fragment">
+Results: pretty good ✅
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org8d0b774">
+<h2 id="org8d0b774">🧪 Testing</h2>
+<div class="columns" style="grid-template-columns:1fr 1fr;">
+
+<p style="text-align:right;">
+(Nothing personal)
+</p>
+
+
+<div id="orgc5940b8" class="figure">
+<p><img src="jenkins-trash.png" alt="jenkins-trash.png" width="30%" />
+</p>
+</div>
+
+</div>
+
+</section>
+<section id="slide-org0553ec2">
+<h3 id="org0553ec2">Impressions From a First-time CI Engineer</h3>
+<div class="columns" style="grid-template-columns:1fr 1fr;">
+
+
+<div id="org2e3c14d" class="figure">
+<p><img src="noidea.png" alt="noidea.png" />
+</p>
+</div>
+
+<p style="font-size:5rem;" class="fragment">
+<i>%!#$&amp;ing YAML</i>
+</p>
+
+</div>
+
+</section>
+<section id="slide-orgb0ae85b" data-background="muppet-fire.jpg" data-background-opacity="0.25">
+<h3 id="orgb0ae85b">But Wait, There's More</h3>
+<ul>
+<li class="fragment fade-in-then-semi-out">Toolchains
+<ul>
+<li>Python (Django), Node (Vue), Rust</li>
+<li>Related libraries (for example, <code>libsystemd</code> for Rust)</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out"><i>Integration</i> tests
+<ul>
+<li>Networking product → multi-node networked tests</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgfc93bc6">
+<h3 id="orgfc93bc6">Testing Considerations</h3>
+<div class="columns">
+
+<ul>
+<li data-fragment-index="1" class="fragment fade-in-then-semi-out">Test environment?</li>
+<li data-fragment-index="5" class="fragment fade-in-then-semi-out">Managing dependencies?</li>
+
+</ul>
+
+<div class="r-stack" id="org18fbd64">
+<p>
+
+</p>
+
+<div class="fragment fade-out" data-fragment-index="5">
+<ul>
+<li data-fragment-index="2" class="fragment fade-in-then-semi-out">Containers?</li>
+<li data-fragment-index="3" class="fragment fade-in-then-semi-out">Virtual machines for network-level testing?</li>
+<li data-fragment-index="4" class="fragment fade-in-then-semi-out">How to support chosen environment for local tests?</li>
+
+</ul>
+</div>
+
+<ul>
+<li data-fragment-index="6" class="fragment fade-in-then-semi-out">Have to define a <i>matching</i> Python, Node, and Rust toolchain</li>
+<li data-fragment-index="7" class="fragment fade-in-then-semi-out">How automatic should it be?</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</section>
+<section id="slide-org77c6f51">
+<h3 id="org77c6f51">You Knew This Part was Coming</h3>
+<div class="columns">
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Dependencies
+<ul>
+<li>&#x2026;use the <code>devshell</code>! (toolchains, libraries, utilities)</li>
+<li>Nix <i>already knows</i> what parts must build each package, so just include those parts. Define it <b>once</b></li>
+
+</ul></li>
+<li class="fragment fade-in">Integration testing
+<ul>
+<li>The <code>nixosTest</code> framework makes it easy to spawn and test virtual machines</li>
+
+</ul></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="fragment">nixosTest <span style="color: #c099ff;">{</span>
+  <span style="color: #82aaff;">name</span> = <span style="color: #c3e88d;">"network-appliance"</span>;
+  <span style="color: #82aaff;">nodes.appliance</span> = <span style="color: #ff995e;">{</span> lib, pkgs, ... <span style="color: #ff995e;">}</span>: <span style="color: #ff995e;">{</span>
+    <span style="color: #82aaff;">services.nginx.enable</span> = <span style="color: #4fd6be;">true</span>;
+    <span style="color: #82aaff;">networking.firewall.allowedTCPPorts</span> = <span style="color: #ff98a4;">[</span> 80 <span style="color: #ff98a4;">]</span>;
+  <span style="color: #ff995e;">}</span>;
+  <span style="color: #82aaff;">testScript</span> = <span style="color: #7a88cf;">/* python */</span> <span style="color: #c3e88d;">''</span>
+<span style="color: #c3e88d;">    appliance.wait_for_unit("nginx.service")</span>
+<span style="color: #c3e88d;">    appliance.succeed("curl http://localhost")</span>
+<span style="color: #c3e88d;">  ''</span>;
+<span style="color: #c099ff;">}</span>
+</pre>
+</div>
+
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org40c71ca">
+<h2 id="org40c71ca">Key Takeaways</h2>
+<ul>
+<li class="fragment fade-in-then-semi-out">📖 <i>Internal</i> Documentation</li>
+<li class="fragment fade-in-then-semi-out">🫂 Developer support</li>
+<li class="fragment fade-in-then-semi-out">💪 Confidence to build</li>
+
+</ul>
+
+</section>
+<section id="slide-orga16c0c1">
+<h3 id="orga16c0c1">📖 Documentation</h3>
+<ul>
+<li class="fragment fade-in-then-semi-out">Foundational
+<ul>
+<li><i>What</i>, <b>how</b>, and <span class="underline">why</span></li>
+<li>Pre-empting questions and workflows</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">As an itch-scratching beacon
+<ul>
+<li>"Why am I writing docs when I could automate it?"</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org3331381">
+<h3 id="org3331381">🫂 Support</h3>
+<ul>
+<li class="fragment fade-in-then-semi-out">Leading with examples is important
+<ul>
+<li>Building initial CI/CD pipelines is a helpful illustrative case</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">The purpose of a system is what it does
+<ul>
+<li>If things are broken, there’s no point at all</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgb4a1a5c">
+<h3 id="orgb4a1a5c">💪 Confidence to Build</h3>
+<div class="columns">
+
+<ul>
+<li class="fragment fade-in-then-semi-out"><i>Could</i> we have bought big parts of this?</li>
+<li class="fragment appear">Maybe! But what are the tradeoffs?</li>
+
+</ul>
+
+<ul>
+<li class="fragment fade-in-then-semi-out">Where are you willing to be blocked?
+<ul>
+<li>On your own bandwidth, or somebody else's?</li>
+<li>Build vs. buy</li>
+
+</ul></li>
+<li class="fragment fade-in-then-semi-out">Admittedly: power is intoxicating
+<ul>
+<li>Sparse features sometimes, but ✨destiny✨</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgeaf4f20">
+<h2 id="orgeaf4f20">This is the Last Slide</h2>
+<div class="columns" style="grid-template-columns:1fr 2fr">
+
+<p style="text-align:center;font-size:6rem;">
+<i>Thank you!</i>
+</p>
+
+<div>
+<p>
+Happy to hallway-track chat about:
+</p>
+<ul>
+<li>Nix in general</li>
+<li>Packaging/public cloud automation</li>
+<li>Observability (lots of current work around OTEL+wireguard)</li>
+
+</ul>
+</div>
+
+</div>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/search/search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom/zoom.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: false,
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+hashOneBasedIndex: false,
+pdfSeparateFragments: true,
+totalTime: 1800,
+overview: true,
+width: "80%",
+
+transition: 'slide',
+transitionSpeed: 'default',
+
+// Plugins with reveal.js 4.x
+plugins: [ RevealMarkdown, RevealNotes, RevealSearch, RevealZoom ],
+
+// Optional libraries used to extend reveal.js
+dependencies: [
+]
+
+});
+</script>
+</body>
+</html>
