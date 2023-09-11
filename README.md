@@ -12,3 +12,7 @@ Add the `?print-pdf` query string to your address bar when printing my slides an
 ## DevOpsDays Boise 2019 - Loving DevOps by Distrusting Everything
 
 [Slides](devopsdays-boise-2019)
+
+## DevOpsDays Boise 2023 - I Cloned Twelve Ops Engineers with Nix
+
+[Slides](devopsdays-boise-2023)
